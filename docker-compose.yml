@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+    # The Go App
+    go-app:
+        build:
+            context: .
+            dockerfile: Dockerfile  # Make sure this is correct
+        container_name: go_app
+        depends_on:
+            mongo:
+                condition: service_healthy
+        environment:
+            - PORT=3000
+        ports:
+            - '3000:3000'
+        volumes:
+            - './:/opt/app:cached'  # Mount the current directory to /opt/app in the container
+    
+    # MongoDB
+    mongo:
+        image: 'mongo:4.4'
+        container_name: mongo
+        ports:
+            - '27017:27017'
+        volumes:
+            - ./mongodata:/data/db
+        restart: always
+        healthcheck:
+            test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+            interval: 30s
+            timeout: 10s
+            retries: 5

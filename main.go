@@ -1,6 +1,6 @@
 package main
 
-import(
+import (
 	"context"
 	"log"
 	"time"
@@ -62,19 +62,17 @@ func main() {
 	app.Get("/employee", func(c *fiber.Ctx) error {
 
 		query := bson.D{{}}
-		cursor, err := mg.Db.Collection("employees").Find(c.Context(), query)
 
+		cursor, err := mg.Db.Collection("employees").Find(c.Context(), query)
 		if err != nil {
 			return c.Status(500).SendString(err.Error())
 		}
 
-		var employees []Employee = make([]Employee, 0) //understanding json for golang
-
-		cursor.All(c.Context(), &employees)
+		var employees []Employee
 
 		if err := cursor.All(c.Context(), &employees); err != nil {
-			return c.Status(500).SendString((err.Error()))
-
+			log.Println("Error decoding employees:", err)
+			return c.Status(500).SendString(err.Error())
 		}
 
 		return c.JSON(employees)
